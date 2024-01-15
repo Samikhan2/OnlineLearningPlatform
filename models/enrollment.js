@@ -6,4 +6,4 @@ const enrollmentSchema = new mongoose.Schema({
     progress: { type: Number, default: 0 }, 
 });
   
-module.exports = mongoose.model('Enrollment', enrollmentSchema);
+module.exports = mongoose.model('Enrollment', enrollmentSchema); 
