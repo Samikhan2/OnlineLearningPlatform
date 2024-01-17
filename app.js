@@ -23,7 +23,7 @@ app.use('/api/v1/teacher/',teacherRoutes);
 
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerJsDocs))
-app.get('/',(req,res)=>{
+app.post('/',(req,res)=>{
   res.send('UP & RUNNING')
 })
 // PORT 
