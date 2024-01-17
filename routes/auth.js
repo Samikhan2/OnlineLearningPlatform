@@ -8,28 +8,12 @@ const router = express.Router();
 
 const User = require('../models/user');
 
-// /**
-//  * @route GET /api/v1/auth
-//  * @desc Get logged in data
-//  * @access private
-//  */
-// router.get('/', auth, async (req, res) => {
-//   try {
-//     const user = await User.findById(req.user.id).select('-password');
-//     return res.json(user);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).json({
-//       msg: 'Server error',
-//     });
-//   }
-// });
-
 /**
  * @route POST /api/v1/auth
  * @desc log in user
  * @access public
  */
+
 router.post(
   '/',
   [

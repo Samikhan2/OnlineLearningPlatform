@@ -1,33 +1,62 @@
 const express = require('express');
 const router = express.Router();
+const { check, validationResult } = require('express-validator');
 const Course = require('../models/course');
 const auth = require('../middleware/auth');
 
-// Create a new course
-router.post('/create', auth(['teacher']), async (req, res) => {
-  try {
-    const { title, url, description, teacher, duration } = req.body;
-    const teacherId = req.user.id; 
 
+/**
+ * @route POST /api/v1/auth
+ * @desc POST create a new course
+ * @access private
+ */
+router.post('/create', auth, [
+  // Validation middleware
+  check('title', 'Title is required').not().isEmpty(),
+  check('url', 'Invalid URL').isURL(),
+  check('description', 'Description is required').not().isEmpty(),
+  check('duration', 'Duration must be a number').optional().isNumeric(),
+], async (req, res) => {
+  try {
+    // Check if the user is a teacher
+    if (req.user.role !== 'teacher') {
+      return res.status(403).json({ msg: 'Only teachers can create courses.' });
+    }
+
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Destructure required fields from the request body
+    const { title, url, description, duration } = req.body;
+
+    // Create a new course object
     const newCourse = new Course({
-        title, 
-        url, 
-        description, 
-        teacher: teacherId, 
-        duration
+      title,
+      url,
+      description,
+      teacher: req.user.username,
+      duration,
     });
 
+    // Save the course to the database
     await newCourse.save();
 
-    res.json({ msg: 'Course created successfully', course: newCourse });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(201).json({ msg: 'Course created successfully.', course: newCourse });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Internal Server Error' });
   }
 });
 
-// Update a course
-router.put('/update-course/:courseId', auth(['teacher']), async (req, res) => {
+/**
+ * @route PUT /api/teacher
+ * @desc Update a course
+ * @access private
+ */
+router.put('/update-course/:courseId', auth, async (req, res) => {
   try {
     const courseId = req.params.courseId;
     const { title, url, description, teacher, duration } = req.body;
@@ -51,7 +80,7 @@ router.put('/update-course/:courseId', auth(['teacher']), async (req, res) => {
     course.duration = duration;
     await course.save();
 
-    res.json({ msg: 'Course updated successfully', course });
+    res.json({ msg: 'Course updated successfully'});
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ msg: 'Server error' });
@@ -60,11 +89,11 @@ router.put('/update-course/:courseId', auth(['teacher']), async (req, res) => {
 
 /**
  * @route DELETE /api/v1/teacher
- * @desc log in teacher
+ * @desc DELETE a course
  * @access private
  */
 // Delete a course
-router.delete('/delete-course/:courseId', auth(['teacher']), async (req, res) => {
+router.delete('/delete-course/:courseId', auth, async (req, res) => {
   try {
     const courseId = req.params.courseId;
 
@@ -89,8 +118,13 @@ router.delete('/delete-course/:courseId', auth(['teacher']), async (req, res) =>
   }
 });
 
-// Get all courses created by the logged-in teacher
-router.get('/my-courses', auth(['teacher']), async (req, res) => {
+/**
+ * @route GET /api/teacher
+ * @desc Get all courses created by the logged-in teacher
+ * @access private
+ */
+
+router.get('/my-courses', auth, async (req, res) => {
   try {
     const teacherId = req.user.id;
 

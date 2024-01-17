@@ -1,0 +1,365 @@
+swagger: "2.0"
+info: 
+  title: OnlineLearningPlatform
+  description: this is my OnlineLearningPlatform project.
+  version: 1.0
+  author: SamiKhan
+  contact:
+    email: sami4678kh@gmail.com
+    github: https://github.com/Samikhan2
+  liscence:
+    name: Apache 2.0
+    url: http://apache.org/
+  servers:
+    -url: http://localhost:8080/
+    description: this is my local server
+    -url: http://
+    description: this is my deployed server
+host: localhost:8080
+basePath: /api/v1
+schemes: [http,https]
+
+
+paths:
+  /user/sign-up:
+    post:
+      summary: Create a new user
+      description: Register a new user with the provided information.
+      tags:
+        - User
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: User information for registration
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                description: User's full name
+              email:
+                type: string
+                format: email
+                description: User's email address
+              password:
+                type: string
+                description: User's password (6 to 15 characters)
+              phone:
+                type: integer
+                format: int32
+                description: User's phone number (11 digits)
+              role:
+                type: string
+                enum: ['student', 'teacher', 'administrator']
+                description: User's role
+      responses:
+        200:
+          description: User registration successful
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: JWT token for authentication
+        400:
+          description: Bad request, validation error
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    msg:
+                      type: string
+                      description: Error message
+        500:
+          description: Server error
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+  /auth:
+    post:
+      summary: Log in user
+      description: Authenticate a user with the provided email and password.
+      tags:
+        - Authentication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: User credentials for authentication
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                description: User's email address
+              password:
+                type: string
+                description: User's password
+      responses:
+        200:
+          description: User authentication successful
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: JWT token for authentication
+        400:
+          description: Bad request, validation error or user not found
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+        500:
+          description: Server error
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+  /teacher/create:
+    post:
+      summary: Create a new course
+      description: Endpoint for teachers to create a new course.
+      tags:
+        - Courses
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Course information for creation
+          required: true
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Title of the course
+              url:
+                type: string
+                format: uri
+                description: URL of the course
+              description:
+                type: string
+                description: Description of the course
+              duration:
+                type: number
+                description: Duration of the course (optional)
+      responses:
+        201:
+          description: Course created successfully
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Success message
+              course:
+                type: object
+                description: Details of the created course
+        400:
+          description: Bad request, validation error or user not authorized
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    msg:
+                      type: string
+                      description: Error message
+        403:
+          description: Forbidden, only teachers can create courses
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+        500:
+          description: Server error
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+
+  /teacher/update-course/{courseId}:
+    put:
+      summary: Update a course
+      description: Endpoint for updating an existing course.
+      tags:
+        - Courses
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to be updated
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Updated course information
+          required: true
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Updated title of the course
+              url:
+                type: string
+                format: uri
+                description: Updated URL of the course
+              description:
+                type: string
+                description: Updated description of the course
+              teacher:
+                type: string
+                description: Updated teacher of the course
+              duration:
+                type: number
+                description: Updated duration of the course
+      responses:
+        200:
+          description: Course updated successfully
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Success message
+        403:
+          description: Forbidden, only the owner can update the course
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+        404:
+          description: Not found, course not found
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+        500:
+          description: Server error
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+
+  /teacher/delete-course/{courseId}:
+    delete:
+      summary: Delete a course
+      description: Endpoint for deleting an existing course.
+      tags:
+        - Courses
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to be deleted
+          required: true
+          type: string
+      responses:
+        200:
+          description: Course deleted successfully
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Success message
+        403:
+          description: Forbidden, only the owner can delete the course
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+        404:
+          description: Not found, course not found
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+        500:
+          description: Server error
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
+
+  /teacher/my-courses:
+    get:
+      summary: Get all courses created by the logged-in teacher
+      description: Endpoint for retrieving all courses created by the logged-in teacher.
+      tags:
+        - Courses
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Courses retrieved successfully
+          schema:
+            type: object
+            properties:
+              courses:
+                type: array
+                description: List of courses created by the teacher
+                items:
+                  type: object
+                  description: Details of a course
+        500:
+          description: Server error
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                description: Error message
