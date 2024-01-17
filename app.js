@@ -23,6 +23,9 @@ app.use('/api/v1/teacher/',teacherRoutes);
 
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerJsDocs))
+app.get('/',(req,res)=>{
+  res.send('UP & RUNNING')
+})
 // PORT 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
